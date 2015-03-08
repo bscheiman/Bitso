@@ -61,8 +61,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitsoLib.cs" />
-    <Compile Include="Objects\BasePostObject.cs" />
-    <Compile Include="Objects\Ticker.cs" />
+    <Compile Include="Objects\Requests\BankWireCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\BasePostObject.cs" />
+    <Compile Include="Objects\Requests\BaseCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\BuyLimitOrderRequest.cs" />
+    <Compile Include="Objects\Requests\BuyMarketOrderRequest.cs" />
+    <Compile Include="Objects\Requests\CancelOrderRequest.cs" />
+    <Compile Include="Objects\Requests\OpenOrdersRequest.cs" />
+    <Compile Include="Objects\Requests\PadeMobileCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\RippleCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\RippleWithdrawRequest.cs" />
+    <Compile Include="Objects\Requests\SellLimitOrderRequest.cs" />
+    <Compile Include="Objects\Requests\SellMarketOrderRequest.cs" />
+    <Compile Include="Objects\Requests\SpeiCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\TransferQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\UserTransactionsRequest.cs" />
+    <Compile Include="Objects\Requests\VoucherCreateQuoteRequest.cs" />
+    <Compile Include="Objects\Requests\WithdrawBitcoinRequest.cs" />
+    <Compile Include="Objects\Responses\Balance.cs" />
+    <Compile Include="Objects\Responses\CreateTransfer.cs" />
+    <Compile Include="Objects\Responses\Order.cs" />
+    <Compile Include="Objects\Responses\OrderBook.cs" />
+    <Compile Include="Objects\Responses\OrderStatus.cs" />
+    <Compile Include="Objects\Responses\Outlet.cs" />
+    <Compile Include="Objects\Responses\Quote.cs" />
+    <Compile Include="Objects\Responses\Ticker.cs" />
+    <Compile Include="Objects\Responses\Transaction.cs" />
+    <Compile Include="Objects\Responses\TransferQuote.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

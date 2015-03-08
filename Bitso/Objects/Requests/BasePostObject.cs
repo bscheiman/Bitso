@@ -5,8 +5,8 @@ using Newtonsoft.Json;
 
 #endregion
 
-namespace Bitso.Objects {
-    internal class BasePostObject {
+namespace Bitso.Objects.Requests {
+    public class BasePostObject {
         [JsonProperty("key")]
         public string Key { get; set; }
 
