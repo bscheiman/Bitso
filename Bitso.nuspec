@@ -7,7 +7,7 @@
      <projectUrl>https://github.com/bscheiman/bitso</projectUrl>
      <requireLicenseAcceptance>false</requireLicenseAcceptance>
      <description>.NET wrapper for Bitso, Mexico's #1 bitcoin exchange</description>
-     <summary>http://conekta.io</summary>
+     <summary>http://www.bitso.com</summary>
      <language>en-US</language>
      <tags>bscheiman scheiman boris bitso bitcoin payment mexico pagos pago cobro</tags>
    </metadata>
