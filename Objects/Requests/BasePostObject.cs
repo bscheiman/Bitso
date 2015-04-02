@@ -17,7 +17,7 @@ namespace Bitso.Objects.Requests {
         public string Signature { get; private set; }
 
         public void Setup(string apiUser, long client, string apiSecret) {
-            Nonce = DateUtil.Now;
+            Nonce = DateUtil.NowMilli;
             Key = apiUser;
 
             string sign = Nonce + Key + client;
