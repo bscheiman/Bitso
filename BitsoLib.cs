@@ -1,13 +1,14 @@
 ﻿#region
-using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using bscheiman.Common.Extensions;
 using Bitso.Objects.Requests;
 using Bitso.Objects.Responses;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using RestSharp;
+using RestSharp.Portable;
 
 #endregion
 
@@ -61,9 +62,8 @@ namespace Bitso {
             });
         }
 
-        public Task<CreateTransfer> CreateBankWireTransferQuoteAsync(TransferQuote quote, string fullName, string accountNumber,
-                                                                     string holderAddress, string bankAddress, string swift,
-                                                                     string otherInstructions) {
+        public Task<CreateTransfer> CreateBankWireTransferQuoteAsync(TransferQuote quote, string fullName, string accountNumber, string holderAddress,
+                                                                     string bankAddress, string swift, string otherInstructions) {
             quote.ThrowIfNull("quote");
             quote.Quote.ThrowIfNull("quote.Quote");
             quote.Quote.Gross.ThrowIf(quote.Quote.Gross < 0, "Invalid amount", "quote.Quote.Gross");
@@ -201,10 +201,10 @@ namespace Bitso {
             });
         }
 
-        public Task<Transaction[]> GetTransactionsAsync(string book = "btc_mxn", bool perHour = true) {
+        public Task<List<Transaction>> GetTransactionsAsync(string book = "btc_mxn", bool perHour = true) {
             book.ThrowIfNullOrEmpty("book");
 
-            return GetAsync<Transaction[]>("transactions", null, new Parameter {
+            return GetAsync<List<Transaction>>("transactions", null, new Parameter {
                 Name = "book",
                 Value = book,
                 Type = ParameterType.QueryString
@@ -304,69 +304,54 @@ namespace Bitso {
         }
 
         #region Helpers
-        internal Task<T> DeleteAsync<T>(string url, params Parameter[] parameters) where T : new() {
-            var tcs = new TaskCompletionSource<T>();
-            var client = GetClient(url);
-
-            client.ExecuteAsync(GetRequest(url, Method.DELETE, null, parameters), response => tcs.SetResult(response.Content.FromJson<T>()));
-
-            return tcs.Task;
+        internal async Task<T> DeleteAsync<T>(string url, params Parameter[] parameters) where T : new() {
+            return await Send<T>(url, HttpMethod.Delete, null, parameters);
         }
 
-        internal Task<T> GetAsync<T>(string url, BasePostObject obj = null, params Parameter[] parameters) {
-            var tcs = new TaskCompletionSource<T>();
+        private async Task<T> Send<T>(string url, HttpMethod method, BasePostObject obj, params Parameter[] parameters) where T : new() {
             var client = GetClient(url);
+            var jsonSettings = new JsonSerializerSettings {
+                Error = delegate(object sender, ErrorEventArgs args) { args.ErrorContext.Handled = true; }
+            };
 
-            client.ExecuteAsync(GetRequest(url, Method.GET, obj, parameters), response => tcs.SetResult(response.Content.FromJson<T>()));
+            if (obj != null)
+                obj.Setup(ApiUser, ClientId, ApiSecret);
 
-            return tcs.Task;
+            var response = await client.Execute(GetRequest(url, method, obj, parameters));
+
+            return JsonConvert.DeserializeObject<T>(GetString(response.RawBytes), jsonSettings);
+        }
+
+        internal async Task<T> GetAsync<T>(string url, BasePostObject obj = null, params Parameter[] parameters) where T : new() {
+            return await Send<T>(url, HttpMethod.Get, obj, parameters);
         }
 
         internal RestClient GetClient(string url) {
-            var client = new RestClient(BaseUrl) {
-                UserAgent = "Bitso.NET"
-            };
-
-            return client;
+            return new RestClient(BaseUrl);
         }
 
-        internal RestRequest GetRequest(string url, Method method, BasePostObject obj, params Parameter[] parameters) {
+        internal RestRequest GetRequest(string url, HttpMethod method, BasePostObject obj, params Parameter[] parameters) {
             var request = new RestRequest(url, method);
 
             foreach (var p in parameters)
                 request.AddParameter(p);
 
-            request.AddParameter("application/json", obj.ToJson(), ParameterType.RequestBody);
+            if (obj != null)
+                request.AddBody(obj);
 
             return request;
         }
 
-        internal Task<T> PostAsync<T>(string url, BasePostObject obj, params Parameter[] parameters) where T : new() {
-            var tcs = new TaskCompletionSource<T>();
-            var client = GetClient(url);
-
-            var jsonSettings = new JsonSerializerSettings {
-                Error = delegate(object sender, ErrorEventArgs args) {
-                    Console.WriteLine(args.ErrorContext.Error.Message);
-                    args.ErrorContext.Handled = true;
-                }
-            };
-
-            obj.Setup(ApiUser, ClientId, ApiSecret);
-            client.ExecuteAsync(GetRequest(url, Method.POST, obj, parameters),
-                response => tcs.SetResult(JsonConvert.DeserializeObject<T>(response.Content, jsonSettings)));
-
-            return tcs.Task;
+        internal async Task<T> PostAsync<T>(string url, BasePostObject obj, params Parameter[] parameters) where T : new() {
+            return await Send<T>(url, HttpMethod.Post, obj, parameters);
         }
 
-        internal Task<T> PutAsync<T>(string url, BasePostObject obj, params Parameter[] parameters) where T : new() {
-            var tcs = new TaskCompletionSource<T>();
-            var client = GetClient(url);
+        private string GetString(byte[] bytes) {
+            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+        }
 
-            obj.Setup(ApiUser, ClientId, ApiSecret);
-            client.ExecuteAsync(GetRequest(url, Method.PUT, obj, parameters), response => tcs.SetResult(response.Content.FromJson<T>()));
-
-            return tcs.Task;
+        internal async Task<T> PutAsync<T>(string url, BasePostObject obj, params Parameter[] parameters) where T : new() {
+            return await Send<T>(url, HttpMethod.Put, obj, parameters);
         }
         #endregion
     }
